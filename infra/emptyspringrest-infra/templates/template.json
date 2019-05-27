@@ -1,0 +1,161 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "webapp_name": {
+            "defaultValue": "Needs to be defined in parameters file",
+            "type": "String"
+        },
+        "environment": {
+            "defaultValue": "Needs to be defined in parameters file (environment specific)",
+            "type": "String"
+        },
+        "main_db_password": {
+            "defaultValue": "Needs to be defined in parameters file (environment specific)",
+            "type": "String"
+        }        
+    },
+    "variables": {
+        "app_name_with_env_suffix": "[concat(parameters('webapp_name'),'-',toLower(parameters('environment')))]",
+        "main_db_username": "[concat('appuser01@', variables('app_name_with_env_suffix') )]",
+        "conn_string_main_db": "[concat('jdbc:sqlserver://', variables('app_name_with_env_suffix') ,'.database.windows.net:1433;database=emptyspringrest;user=', variables('main_db_username'), ';password=', parameters('main_db_password'), ';encrypt=true;trustServerCertificate=false;hostNameInCertificate=*.database.windows.net;loginTimeout=30;')]"
+    },
+    "resources": [
+        {
+            "type": "Microsoft.Sql/servers",
+            "kind": "v12.0",
+            "name": "[variables('app_name_with_env_suffix')]",
+            "apiVersion": "2015-05-01-preview",
+            "location": "eastus",
+            "scale": null,
+            "properties": {
+                "administratorLogin": "appuser01",
+                "administratorLoginPassword": "[parameters('main_db_password')]",
+                "version": "12.0"
+            },
+            "dependsOn": []
+        },
+        {            
+            "type": "Microsoft.Sql/servers/databases",
+            "sku": {
+                "name": "S0",
+                "tier": "Standard"
+            },
+            "kind": "v12.0,user",
+            "name": "[concat(variables('app_name_with_env_suffix'), '/emptyspringrest')]",
+            "apiVersion": "2017-03-01-preview",
+            "location": "eastus",
+            "scale": null,
+            "properties": {
+                "collation": "SQL_Latin1_General_CP1_CI_AS",
+                "maxSizeBytes": 268435456000,
+                "catalogCollation": "SQL_Latin1_General_CP1_CI_AS",
+                "zoneRedundant": false
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('app_name_with_env_suffix') )]"
+            ]
+        },
+        {
+
+            "type": "Microsoft.Sql/servers/firewallRules",
+            "kind": "v12.0",
+            "name": "[concat( variables('app_name_with_env_suffix'), '/AllowAllWindowsAzureIps' )]",
+            "apiVersion": "2014-04-01-preview",
+            "location": "eastus",
+            "properties": {
+                "startIpAddress": "0.0.0.0",
+                "endIpAddress": "0.0.0.0"
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Sql/servers', variables('app_name_with_env_suffix') )]"
+            ]
+        },
+        {
+            "type": "Microsoft.Web/serverfarms",
+            "sku": {
+                "name": "B1",
+                "tier": "Basic",
+                "size": "B1",
+                "family": "B",
+                "capacity": 1
+            },
+            "kind": "app",
+            "name": "[variables('app_name_with_env_suffix')]",
+            "apiVersion": "2016-09-01",
+            "location": "Central US",
+            "scale": null,
+            "properties": {
+                "name": "[variables('app_name_with_env_suffix')]",
+                "workerTierName": null,
+                "adminSiteName": null,
+                "hostingEnvironmentProfile": null,
+                "perSiteScaling": false,
+                "reserved": false,
+                "targetWorkerCount": 0,
+                "targetWorkerSizeId": 0
+            },
+            "dependsOn": []
+        },
+        {
+            "type": "Microsoft.Web/sites",
+            "kind": "app",
+            "name": "[variables('app_name_with_env_suffix')]",
+            "apiVersion": "2016-08-01",
+            "location": "Central US",
+            "scale": null,
+            "properties": {
+                "enabled": true,
+                "hostNameSslStates": [
+                    {
+                        "name": "[concat(variables('app_name_with_env_suffix'),'.azurewebsites.net')]",
+                        "sslState": "Disabled",
+                        "virtualIP": null,
+                        "thumbprint": null,
+                        "toUpdate": null,
+                        "hostType": "Standard"
+                    },
+                    {
+                        "name": "[concat(variables('app_name_with_env_suffix'),'.scm.azurewebsites.net')]",
+                        "sslState": "Disabled", 
+                        "virtualIP": null,
+                        "thumbprint": null,
+                        "toUpdate": null,
+                        "hostType": "Repository"
+                    }
+                ],
+                "serverFarmId": "[resourceId('Microsoft.Web/serverfarms', variables('app_name_with_env_suffix'))]",
+                "reserved": false,
+                "siteConfig": {
+                    "javaVersion": "1.8",
+                    "javaContainer": "TOMCAT",
+                    "javaContainerVersion": "8.5",              
+                    "appSettings": [
+                        {
+                          "name": "ENVIRONMENT_DESC",
+                          "value": "[parameters('environment')]"
+                        }
+                      ],
+                      "connectionStrings": [
+                        {
+                          "name": "MAIN_DB",
+                          "connectionString": "[variables('conn_string_main_db')]",
+                          "type": "SQLAzure"
+                        }
+                      ]                
+                },
+                "scmSiteAlsoStopped": false,
+                "hostingEnvironmentProfile": null,
+                "clientAffinityEnabled": true,
+                "clientCertEnabled": false,
+                "hostNamesDisabled": false,
+                "containerSize": 0,
+                "dailyMemoryTimeQuota": 0,
+                "cloningInfo": null
+            },
+            "dependsOn": [
+                "[resourceId('Microsoft.Web/serverfarms', variables('app_name_with_env_suffix'))]"
+            ]		
+        }
+    ]
+}

@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ApplicationInsights
+	xmlns="http://schemas.microsoft.com/ApplicationInsights/2013/Settings"
+	schemaVersion="2014-05-30">
+
+
+	<!-- The key from the portal: -->
+	<InstrumentationKey>575c6048-f89f-4c66-8667-d23a4c7153c5</InstrumentationKey>
+
+
+	<!-- OS Performance counters should be sucked in by default unless you set 
+		"UseBuiltIn" to False -->
+		
+	<performancecounters>
+		
+		<!-- a couple JMX counters as an example of Java specific monitoring -->
+		<jmx>
+		
+			<add objectName="java.lang:type=ClassLoading"
+				attribute="TotalLoadedClassCount" displayName="Loaded Class Count" />
+			<add objectName="java.lang:type=Memory"
+				attribute="HeapMemoryUsage.used"
+				displayName="Heap Memory Usage-used" type="composite" />
+			<add objectName="java.lang:type=Threading"
+				attribute="ThreadCount" displayName="Thread Count" />
+
+			<!-- note the modified syntax for attributes deeper in the hierarchy -->
+			<add
+				objectName="java.lang:type=GarbageCollector,name=PS MarkSweep"
+				attribute="CollectionCount" displayName="GC MarkSweep Count" />
+			<add
+				objectName="java.lang:type=GarbageCollector,name=PS Scavenge"
+				attribute="CollectionCount" displayName="GC Scavange Count" />
+
+		</jmx>
+	</performancecounters>
+
+	<!-- HTTP request component (not required for bare API) -->
+	<TelemetryModules>
+		<Add type="com.microsoft.applicationinsights.web.extensibility.modules.WebRequestTrackingTelemetryModule">
+			    <Param name = "W3CEnabled" value ="true"/>
+   				<Param name ="enableW3CBackCompat" value = "true" />
+		</Add>
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.modules.WebSessionTrackingTelemetryModule" />
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.modules.WebUserTrackingTelemetryModule" />
+	</TelemetryModules>
+
+	<!-- Events correlation (not required for bare API) -->
+	<!-- These initializers add context data to each event -->
+
+	<TelemetryInitializers>
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationIdTelemetryInitializer" />
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.initializers.WebOperationNameTelemetryInitializer" />
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.initializers.WebSessionTelemetryInitializer" />
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserTelemetryInitializer" />
+		<Add
+			type="com.microsoft.applicationinsights.web.extensibility.initializers.WebUserAgentTelemetryInitializer" />
+
+	</TelemetryInitializers>
+	
+</ApplicationInsights>
