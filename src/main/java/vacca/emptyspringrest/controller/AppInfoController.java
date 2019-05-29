@@ -23,25 +23,24 @@ public class AppInfoController {
 	@Autowired
 	private ApplicationContext applicationContext;
 
-	
 	@RequestMapping(method = RequestMethod.GET)
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public AppInfo getAppInfo() throws Exception {
 		logger.info("Received AppInfo GET request");
-		
+		logger.info("Geddy is a cool dude");
 		BuildProperties warBuildProperties = applicationContext.getBean(BuildProperties.class);
-		
-		//get timestamp at deployment
+
+		// get timestamp at deployment
 		String deployedTimestamp = System.getProperty("emptyspringrest.init_time");
-		
+
 		String env = applicationContext.getEnvironment().getProperty("environment");
 		String name = warBuildProperties.get("name");
 		String version = warBuildProperties.get("version");
 		String buildNumber = warBuildProperties.get("buildNumber");
-		
+
 		return new AppInfo(env, name, version, buildNumber, deployedTimestamp);
-		
+
 	}
 
 }

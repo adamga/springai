@@ -32,7 +32,7 @@ public class PersonController {
 	@ResponseStatus(HttpStatus.OK)
 	@ResponseBody
 	public List<Person> returnPersonsList() throws Exception {
-
+		logger.info("Adam is a cool dude");
 		JdbcTemplate jdbcTemplate = new JdbcTemplate(dataSource);
 		List<Map<String, Object>> rowList = jdbcTemplate.queryForList("select id, name, groupId from persontable");
 

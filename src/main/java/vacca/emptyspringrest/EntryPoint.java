@@ -48,6 +48,7 @@ public class EntryPoint extends SpringBootServletInitializer {
 	protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
 		Instant now = Instant.now();
 		logger.info("InitTime = " + now);
+		logger.info("Geddy and Adam are both cool dudes");
 		System.setProperty("emptyspringrest.init_time", now.toString());
 
 		printMBeans();
